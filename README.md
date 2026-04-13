@@ -7,7 +7,7 @@
 [![Architecture: LLM Native](https://img.shields.io/badge/Architecture-Agentic%20Native-purple.svg)](tools.md)
 [![Contact: Secure](https://img.shields.io/badge/Contact-watchtowerprotocol@proton.me-black.svg)](mailto:watchtowerprotocol@proton.me)
 
-**Watchtower Command** is a fundamentally autonomous, zero-dependency Network Detection & Response (NDR) platform. It is engineered explicitly from the ground up for **Agentic Setup**—any autonomous AI orchestration platform (like OpenClaw, Hermes, or AutoGPT), as well as modern AI coding assistants (like Cursor or Gemini), can natively parse, compile, and securely map this matrix to your environment with zero manual config hunting. Welcome to Watchtower. This is a commercial-grade, locally-hosted Sovereign Security platform. It transforms any host (Mac Studio, Linux VPS, or Raspberry Pi) into an AI-powered Threat Hunting Gateway.
+**Watchtower Command** is a fundamentally autonomous, zero-dependency Network Detection & Response (NDR) platform. It is engineered explicitly from the ground up for **Agentic Setup**—any autonomous AI orchestration platform (like OpenClaw, Hermes, or AutoGPT), as well as modern AI coding assistants (like Cursor or Gemini), can natively parse, compile, and securely map this matrix to your environment with zero manual config hunting. Welcome to Watchtower. This is a commercial-grade, locally-hosted Sovereign Security platform. It transforms any host (Windows OS, Apple Silicon, Linux VPS, or Raspberry Pi) into an AI-powered Threat Hunting Gateway.
 
 ## 1. What does it do?
 Watchtower acts as a fully enclosed, autonomous Central System spanning multi-OS networks. The centralized **Hub** hosts the AI-Driven telemetry portal and Fleet Asset Tracker, while distributed **Supervisors** (Beacons) autonomously enforce Security Policies, trace behavioral fileless memories, and intelligently hunt zero-days locally natively via Python subprocesses.
@@ -33,8 +33,8 @@ chmod +x setup.sh
 1. **Master Hub Mode**: Automatically downloads `Node.js` GUI frameworks, sets up the web dashboard, and generates secure JSON Web Tokens natively into `.env`.
 2. **Edge Sensor Mode**: Deploys purely as a lightweight intelligence beacon, dropping all heavy web dependencies. It natively hooks outwards binding securely back to your configured Master Hub.
 
-## 4. Hardware Integrations (Gemma, Llama, ChatGPT)
-Watchtower operates flawlessly on edge silicon or Cloud interfaces. It seamlessly decodes API signals from massive offline logic models (Gemma 4). For optimized EDR reasoning, guarantee your `max_tokens` context buffers evaluate up to `4000` tokens, allowing complex chain-of-thought isolation against file entropy variants.
+## 4. Hardware Integrations (Qwen, Llama, OpenAI, Anthropic)
+Watchtower operates flawlessly on edge silicon or Cloud interfaces. It seamlessly decodes API signals from massive offline logic models (like Qwen, Llama, or Gemma) as well as commercial cloud APIs. For optimized EDR reasoning, guarantee your `max_tokens` context buffers evaluate up to `4000` tokens, allowing complex chain-of-thought isolation against file entropy variants.
 
 ## 5. Defense Mechanics
 *   **Behavioral Engine:** Halts Living-off-the-Land memory drops.

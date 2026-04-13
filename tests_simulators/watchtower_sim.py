@@ -25,7 +25,7 @@ def trigger_fim():
             f.write(f"var_{i} = '{base64.b64encode(os.urandom(50)).decode()}'\n")
 
     print(f"[+] Dropped highly obfuscated codebase to {target_file}.")
-    print("[+] WATCHTOWER EFFECT: The FIM Engine will intercept the file write, assess the mathematical Entropy, and immediately push it into the Gemma-4 local LLM context to determine if it is a ransomware dropper.")
+    print("[+] WATCHTOWER EFFECT: The FIM Engine will intercept the file write, assess the mathematical Entropy, and immediately push it into the local or cloud LLM context (e.g. Qwen/Llama) to determine if it is a ransomware dropper.")
 
 def trigger_ndr():
     print("[*] Triggering NDR Exfiltration Burst Engine...")

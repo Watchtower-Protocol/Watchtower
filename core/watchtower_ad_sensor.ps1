@@ -6,7 +6,7 @@ Monitors high-fidelity Windows Security Event Logs and streams them to the Watch
 Includes an outbound beacon for Command & Control (C2) to execute response actions without opening inbound ports.
 #>
 
-$HubIP = "100.x.x.x" # Replace with Mac Studio Tailscale/Mesh IP
+$HubIP = "100.x.x.x" # Replace with Master Hub Tailscale/Mesh IP
 $HubApiPort = 3000
 $ApiKey = os.environ.get("WATCHTOWER_API_KEY", "WATCHTOWER_DEFAULT_KEY")
 $Hostname = $env:COMPUTERNAME

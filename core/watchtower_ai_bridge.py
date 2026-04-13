@@ -40,7 +40,7 @@ def _analyze_file(event_type, filepath, entropy=None):
     user_prompt = f"Event: {event_type}\nFile: {filepath}{entropy_str}\nContent snippet:\n{content}\n\nOutput strictly valid JSON now:"
 
     # Dynamically fetch the currently loaded model from LM Studio
-    model_id = "gemma-4"
+    model_id = "qwen-coder" # Replace with your preferred local or cloud model
     try:
         models_url = LM_STUDIO_URL.replace("/chat/completions", "/models")
         req_models = urllib.request.Request(models_url)
