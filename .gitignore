@@ -1,0 +1,35 @@
+# Watchtower Defensive Shield
+# ===========================
+# Excludes local C2 databases, tokens, environments, and secrets gracefully.
+
+# Environment Variables
+.env
+.env.backup
+.env.bak
+
+# Local Telemetry & Topography Databases
+data/
+backend/data/
+historical_topology.json
+watchtower_db.json
+
+# C2 Quarantines & Logs
+raw_mac_dumps/
+quarantine/
+*.log
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# OS Hidden Files
+.DS_Store
+Thumbs.db

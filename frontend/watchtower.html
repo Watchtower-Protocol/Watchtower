@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watchtower | Sovereign Command v1.6</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <link rel="icon" type="image/png" href="/assets/watchtower_logo.png">
+    <style>
+        :root {
+            --bg: #0B0D14;
+            --surface: rgba(18, 20, 28, 0.75);
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #ffffff;
+            --text-dim: #94a3b8;
+            --accent: #38bdf8;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --success: #10b981;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 16px 24px;
+            display: grid;
+            
+            grid-template-columns: 1fr 400px;
+            grid-template-rows: auto 1fr;
+            gap: 16px;
+            height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: var(--accent);
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        h1::before {
+            content: ''; display: inline-block; width: 12px; height: 12px;
+            background: var(--accent); box-shadow: 0 0 10px var(--accent); border-radius: 50%;
+        }
+
+        .status-container { display: flex; flex-direction: column; align-items: flex-end; }
+        .status-indicator {
+            display: flex; align-items: center; gap: 10px;
+            font-family: 'Fira Code', monospace; font-size: 0.85rem; font-weight: 500;
+            color: var(--danger); background: rgba(255,42,95, 0.05);
+            border: 1px solid rgba(255,42,95, 0.2); padding: 8px 16px;
+            border-radius: 30px; transition: all 0.3s ease;
+        }
+        .status-indicator.connected {
+            color: var(--success); background: rgba(16,185,129, 0.05);
+            border-color: rgba(16,185,129, 0.2);
+        }
+
+        .pulse { width: 8px; height: 8px; background-color: var(--danger); border-radius: 50%; box-shadow: 0 0 10px var(--danger); animation: blink 2s infinite; }
+        .status-indicator.connected .pulse { background-color: var(--success); box-shadow: 0 0 10px var(--success); }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        /* STRUCTURE */
+        .main-col {
+            display: flex; flex-direction: column; gap: 16px; height: 100%; overflow: hidden;
+        }
+
+        .panel {
+            background-color: var(--surface); border: 1px solid var(--border);
+            border-radius: 16px; display: flex; flex-direction: column;
+            overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        }
+
+        .panel-matrix { flex: 2; } 
+        .panel-mesh { flex: 1; min-height: 200px; } 
+        .panel-stream { grid-column: 2; height: 100%; } 
+
+        .panel-header {
+            padding: 12px 16px; border-bottom: 1px solid var(--border);
+            font-size: 0.80rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.1em; color: var(--text-dim);
+            background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0) 100%);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .panel-content {
+            padding: 16px; flex-grow: 1; overflow-y: auto;
+            position: relative; scroll-behavior: smooth;
+        }
+
+        /* CUSTOM SCROLLBAR */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+        
+        .empty-state {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--text-dim); font-family: 'Fira Code', monospace;
+            font-size: 0.90rem; opacity: 0.6; text-align: center; padding: 20px;
+        }
+        
+        /* ------------------ BOTTOM PANEL (MESH) ------------------ */
+        .mesh-header-controls {
+            display: flex; gap: 16px; width: 250px;
+        }
+
+        .search-bar {
+            width: 100%; padding: 8px 16px; background: rgba(0,0,0,0.4); 
+            border: 1px solid rgba(255,255,255,0.1); box-sizing: border-box;
+            color: var(--text); border-radius: 8px; font-family: 'Fira Code', monospace; 
+            font-size: 0.8rem; outline: none; transition: all 0.3s ease;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .search-bar:focus { 
+            border-color: var(--accent); background: rgba(0, 240, 255, 0.05);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 0 10px rgba(0, 240, 255, 0.2); 
+        }
+        .search-bar::placeholder { color: rgba(255,255,255,0.3); }
+        
+        #mesh-grid {
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
+            gap: 12px;
+        }
+
+        .mesh-node {
+            padding: 12px; background: rgba(255,255,255,0.01);
+            border: 1px solid rgba(255,255,255,0.05); border-radius: 12px;
+            font-family: 'Fira Code', monospace;
+            cursor: pointer; transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        .mesh-node:hover { background: rgba(0,240,255,0.04); transform: translateY(-2px); border-color: rgba(0,240,255,0.15); }
+        .mesh-node.active { background: rgba(0,240,255,0.08); border-color: var(--accent); box-shadow: 0 8px 20px rgba(0,240,255,0.1); }
+        
+        /* ------------------ TOP MATRIX ------------------ */
+        #alert-matrix {
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px; align-content: start;
+        }
+
+        .clear-filter-btn {
+            background: rgba(255,42,95,0.1); border: 1px solid var(--danger); color: var(--danger);
+            padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-family: 'Fira Code';
+            cursor: pointer; text-transform: uppercase; transition: all 0.2s; font-weight: bold;
+        }
+        .clear-filter-btn:hover { background: var(--danger); color: #fff; box-shadow: 0 0 10px var(--danger); }
+
+        .alert-card {
+            background: rgba(255,255,255,0.015); border: 1px solid var(--border);
+            border-radius: 12px; padding: 16px; display: flex; flex-direction: column;
+            transition: all 0.3s ease; position: relative; overflow: hidden;
+            animation: fadeIn 0.4s ease-out; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+        }
+        
+        .alert-card::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 4px; background: var(--border); }
+        .alert-card:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.1); }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95) translateY(5px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+        .alert-card.high::before { background: var(--danger); box-shadow: 0 0 10px var(--danger); }
+        .alert-card.medium::before { background: var(--warning); box-shadow: 0 0 10px var(--warning);}
+        .alert-card.low::before { background: var(--success); }
+
+        .alert-tag {
+            display: inline-block; padding: 4px 10px; border-radius: 20px;
+            font-size: 0.60rem; text-transform: uppercase; letter-spacing: 0.05em;
+            background: rgba(255,255,255,0.05); margin-bottom: 10px; font-weight: 800; width: fit-content;
+        }
+        .tag-fim { background: rgba(0, 240, 255, 0.08); color: var(--accent); border: 1px solid rgba(0,240,255,0.2); }
+        .tag-intel { background: rgba(251, 191, 36, 0.08); color: var(--warning); border: 1px solid rgba(251,191,36,0.2); }
+
+        /* Modern Action Buttons */
+        .alert-actions {
+            display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .alert-actions button {
+            flex: 1; padding: 8px 10px; font-size: 0.65rem; font-family: 'Fira Code', monospace; font-weight: 700;
+            border-radius: 10px; cursor: pointer; transition: all 0.2s; min-width: 80px; text-transform: uppercase;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .alert-actions button:hover { transform: translateY(-2px); filter: brightness(1.2); }
+        .alert-actions button:active { transform: translateY(1px); }
+        
+        .btn-inspect { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); color: var(--text); }
+        .btn-inspect:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); }
+        
+        .btn-quarantine { background: rgba(255, 42, 95, 0.05); border: 1px solid rgba(255,42,95,0.3); color: var(--danger); box-shadow: inset 0 0 10px rgba(255,42,95,0.05); }
+        .btn-quarantine:hover { background: rgba(255, 42, 95, 0.15); box-shadow: 0 0 15px rgba(255,42,95,0.2); }
+
+        .btn-freeze { background: rgba(251, 191, 36, 0.05); border: 1px solid rgba(251, 191, 36, 0.3); color: var(--warning); box-shadow: inset 0 0 10px rgba(251,191,36,0.05); }
+        .btn-freeze:hover { background: rgba(251, 191, 36, 0.15); box-shadow: 0 0 15px rgba(251,191,36,0.2); }
+
+        /* ------------------ STREAM ------------------ */
+        #cognitive-stream { display: flex; flex-direction: column; gap: 12px; font-family: 'Fira Code', monospace; }
+        .stream-entry {
+            border-left: 2px solid var(--border); padding-left: 14px; animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1);
+            background: linear-gradient(90deg, rgba(255,255,255,0.02) 0%, transparent 100%);
+            padding: 12px 12px 12px 14px; border-radius: 0 10px 10px 0; word-wrap: break-word;
+        }
+        @keyframes slideIn { from { transform: translateX(10px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .stream-entry.high { border-color: var(--danger); background: linear-gradient(90deg, rgba(255,42,95,0.04) 0%, transparent 100%); }
+        .stream-entry.medium { border-color: var(--warning); background: linear-gradient(90deg, rgba(251,191,36,0.04) 0%, transparent 100%); }
+        
+        .entry-meta { font-size: 0.65rem; color: var(--text-dim); margin-bottom: 6px; letter-spacing: 0.05em; font-weight: 500; }
+        .entry-title { font-weight: 600; color: var(--text); font-family: 'Inter', sans-serif; font-size: 0.90rem; line-height: 1.3; }
+        .entry-ai { color: var(--accent); margin-top: 8px; font-size: 0.75rem; line-height: 1.4; opacity: 0.9; }
+
+        /* Modal / Inspector */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            z-index: 1000; justify-content: center; align-items: center; padding: 24px; animation: fadeIn 0.2s ease-out;
+        }
+        .modal-overlay.active { display: flex; }
+
+        .modal-content {
+            background: #0f1015; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 0;
+            max-width: 700px; width: 100%; max-height: 85vh; display: flex; flex-direction: column;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05); overflow: hidden;
+        }
+        
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 24px; border-bottom: 1px solid var(--border);
+            background: rgba(255,255,255,0.02);
+        }
+        
+        .modal-header h2 { margin: 0; font-size: 1.2rem; color: var(--accent); font-family: 'Fira Code', monospace; font-weight: bold; }
+        .close-btn { 
+            background: rgba(255,255,255,0.05); border: none; color: var(--text); 
+            width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1.1rem;
+            display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+        }
+        .close-btn:hover { background: rgba(255,42,95,0.2); color: var(--danger); transform: rotate(90deg); }
+        
+        #inspector-body { padding: 28px; overflow-y: auto; font-size: 0.95rem; line-height: 1.7; }
+        #inspector-body pre {
+            background: #09090b; padding: 20px; border-radius: 12px; white-space: pre-wrap; word-wrap: break-word;
+            font-family: 'Fira Code', monospace; font-size: 0.85rem; color: var(--text-dim); border: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>
+            Watchtower Command
+            <button onclick="openOtaModal()" style="background:rgba(255, 100, 0, 0.1); border:1px solid #ff6400; color:#ff6400; font-family:'Fira Code'; font-size:0.75rem; padding:6px 12px; border-radius:8px; cursor:pointer; text-transform:uppercase; font-weight:bold; transition:all 0.2s;">🚀 Deploy OTA</button>
+            <button onclick="openPolicyModal()" style="background:rgba(0,240,255,0.1); border:1px solid var(--accent); color:var(--accent); font-family:'Fira Code'; font-size:0.75rem; padding:6px 12px; border-radius:8px; cursor:pointer; text-transform:uppercase; font-weight:bold; transition:all 0.2s;">⚙️ Fleet Policies</button>
+            <button onclick="openInfraModal()" style="background:rgba(16, 185, 129, 0.1); border:1px solid var(--success); color:var(--success); font-family:'Fira Code'; font-size:0.75rem; padding:6px 12px; border-radius:8px; cursor:pointer; text-transform:uppercase; font-weight:bold; transition:all 0.2s;">🗺️ Infrastructure</button>
+        </h1>
+        <div class="status-container">
+            <div class="status-indicator" id="connection-status-box">
+                <div class="pulse" id="connection-pulse"></div>
+                <span id="connection-status">DISCONNECTED</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- COLUMN 1: Main Content Loop -->
+    <div class="main-col">
+        <!-- TOP: Alert Matrix -->
+        <div class="panel panel-matrix">
+            <div class="panel-header">
+                <span id="matrix-title" style="font-size: 1rem; color: var(--text);">Security Matrix [Global]</span>
+                <button id="clear-filter-btn" class="clear-filter-btn" style="display:none;" onclick="clearDeviceFilter()">&#x2715; Clear Node Filter</button>
+            </div>
+            <div class="panel-content" id="alert-matrix-container">
+                <div id="alert-matrix-empty" class="empty-state">
+                    <div style="font-size: 1.2rem; color: #fff; margin-bottom: 8px;">[SYSTEM NOMINAL]</div>
+                    <div style="font-size: 0.85rem;" id="empty-subtext">AWAITING SECURITY TELEMETRY...</div>
+                </div>
+                <div id="alert-matrix">
+                    <!-- Alerts go here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM: Active Mesh Fleet -->
+        <div class="panel panel-mesh">
+            <div class="panel-header" style="background: rgba(0, 0, 0, 0.2);">
+                <span>Active Mesh [Node Fleet]</span>
+                <div class="mesh-header-controls">
+                     <input type="text" id="mesh-search" class="search-bar" onkeyup="filterMesh()" placeholder="Search Hostname or IP...">
+                </div>
+            </div>
+            <div class="panel-content">
+                <div id="mesh-grid"></div>
+            </div>
+        </div>
+
+        <!-- NEW: App Inventory -->
+        <div class="panel panel-inventory" style="flex: 1.5; min-height: 250px;">
+            <div class="panel-header" style="background: rgba(0, 0, 0, 0.2);">
+                <span>App Inventory / Usage Tracking</span>
+                <div class="mesh-header-controls">
+                     <input type="text" id="inv-search" class="search-bar" onkeyup="filterInventory()" placeholder="App, Hash, or User...">
+                </div>
+            </div>
+            <div class="panel-content">
+                <div id="inv-grid" style="display:flex; flex-direction:column; gap:8px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COLUMN 2: Cognitive Stream -->
+    <div class="panel panel-stream">
+        <div class="panel-header">Cognitive Engine [Local AI]</div>
+        <div class="panel-content" id="cognitive-stream-container">
+            <div id="stream-empty" class="empty-state">
+                <div>[AI DORMANT]</div>
+            </div>
+            <div id="cognitive-stream">
+                <!-- Stream events go here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Inspector Modal -->
+    <div class="modal-overlay" id="inspector-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>AI_INSPECTOR // DEEP DIVE</h2>
+                <button class="close-btn" onclick="closeModal()">&#x2715;</button>
+            </div>
+            <div id="inspector-body"></div>
+        </div>
+    </div>
+
+    <!-- Policy Group Modal -->
+    <div class="modal-overlay" id="policy-modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2>FLEET POLICY CONFIGURATION</h2>
+                <button class="close-btn" onclick="document.getElementById('policy-modal').classList.remove('active')">&#x2715;</button>
+            </div>
+            <div style="display:flex; height: 500px; overflow:hidden;">
+                <div style="flex: 1; border-right: 1px solid var(--border); padding: 20px; overflow-y:auto; background:rgba(0,0,0,0.2);">
+                    <h3 style="color:var(--text-dim); font-size:0.8rem; text-transform:uppercase;">Host Groups</h3>
+                    <div id="group-list" style="display:flex; flex-direction:column; gap:8px; margin-top:12px;"></div>
+                    <input type="text" id="new-group-name" class="search-bar" placeholder="New Group..." style="margin-top:16px;">
+                    <button onclick="createGroup()" style="width:100%; padding:8px; margin-top:8px; background:var(--accent); color:#000; font-weight:bold; border:none; border-radius:6px; cursor:pointer;">+ Create Group</button>
+                </div>
+                
+                <div style="flex: 1.5; padding: 20px; overflow-y:auto;">
+                    <h3 style="color:var(--text-dim); font-size:0.8rem; text-transform:uppercase;">Group Policies: <span id="active-group-label" style="color:var(--accent); font-weight:bold;">Default</span></h3>
+                    <div id="policy-toggles" style="display:flex; flex-direction:column; gap:16px; margin-top:20px;">
+                        <!-- Toggles rendered dynamically -->
+                    </div>
+                    <button onclick="savePolicy()" style="width:100%; padding:12px; margin-top:32px; background:var(--success); color:#000; font-weight:bold; border:none; border-radius:6px; cursor:pointer;">Deploy Policy to Group</button>
+                </div>
+                
+                <div style="flex: 1.5; border-left: 1px solid var(--border); padding: 20px; overflow-y:auto; background:rgba(0,0,0,0.2);">
+                    <h3 style="color:var(--text-dim); font-size:0.8rem; text-transform:uppercase;">Node Enrollment</h3>
+                    <div id="host-enrollment-list" style="display:flex; flex-direction:column; gap:12px; margin-top:12px;">
+                        <!-- Hosted devices mapped here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OTA Deployment Modal -->
+    <div class="modal-overlay" id="ota-modal">
+        <div class="modal-content" style="max-width: 600px; text-align:center;">
+            <div class="modal-header">
+                <h2>OVER-THE-AIR (OTA) FLEET DEPLOYMENT</h2>
+                <button class="close-btn" onclick="document.getElementById('ota-modal').classList.remove('active')">&#x2715;</button>
+            </div>
+            <p style="color:var(--text-dim); margin-bottom:20px; font-size:0.9rem;">Upload a compressed <span style="color:var(--warning)">core.zip</span> to autonomously patch and securely restart remote endpoints via HMAC validation.</p>
+            
+            <div style="margin-bottom:20px; text-align:left;">
+                <label style="color:var(--text-dim); font-size:0.8rem; text-transform:uppercase;">Target Host Group:</label>
+                <select id="ota-group-select" style="width:100%; padding:10px; margin-top:8px; background:#000; color:#fff; border:1px solid var(--border); border-radius:6px; font-family:'Fira Code'; font-size:0.85rem; outline:none; cursor:pointer;">
+                </select>
+            </div>
+
+            <div style="border: 2px dashed var(--border); border-radius:12px; padding:40px; background:rgba(0,0,0,0.3); margin-bottom: 20px;">
+                <input type="file" id="ota-file-input" accept=".zip" style="display:none;" onchange="updateOtaLabel()">
+                <label for="ota-file-input" style="cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:16px;">
+                    <span style="font-size:2rem;">📦</span>
+                    <span id="ota-file-label" style="font-family:'Fira Code'; font-weight:bold; color:var(--accent);">Select core.zip payload...</span>
+                </label>
+            </div>
+            
+            <button onclick="deployOta()" id="ota-deploy-btn" style="width:100%; padding:12px; background:var(--warning); color:#000; font-weight:bold; border:none; border-radius:6px; cursor:pointer; text-transform:uppercase; transition:all 0.2s;">Transmit OTA Payload</button>
+        </div>
+    </div>
+    <!-- Infrastructure Modal -->
+    <div class="modal-overlay" id="infra-modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>L2 TOPOGRAPHY SCUBA</h2>
+                <button class="close-btn" onclick="document.getElementById('infra-modal').classList.remove('active')">&#x2715;</button>
+            </div>
+            <div style="padding: 24px; padding-bottom: 0;">
+                <p style="color:var(--text-dim); margin-bottom:20px; font-size:0.9rem;">Inject SSH credentials for core switches. Watchtower will securely vault these and autonomously construct L2 Topologies via the Edge Scraper.</p>
+                <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:24px;">
+                    <input type="text" id="infra-ip" class="search-bar" placeholder="Switch IP (e.g. 10.1.1.5)">
+                    <input type="text" id="infra-user" class="search-bar" placeholder="SSH Username">
+                    <input type="password" id="infra-pass" class="search-bar" placeholder="SSH Password / Key Passphrase">
+                    <button onclick="saveInfrastructure()" style="padding:10px; background:var(--success); color:#000; font-weight:bold; border:none; border-radius:6px; cursor:pointer;">Securely Inject Credentials</button>
+                </div>
+            </div>
+            
+            <div style="padding: 24px; border-top: 1px solid var(--border); background:rgba(0,0,0,0.2);">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="color:var(--text-dim); font-size:0.8rem; text-transform:uppercase; margin:0;">Discovered Topography Maps</h3>
+                    <div style="display:flex; gap:8px;">
+                        <button onclick="clearInfrastructure()" style="background:rgba(255,42,95,0.1); border:1px solid var(--danger); color:var(--danger); padding:4px 8px; border-radius:4px; font-size:0.6rem; cursor:pointer; font-weight:bold;">PURGE VAULT</button>
+                        <button onclick="clearTopology()" style="background:rgba(251,191,36,0.1); border:1px solid var(--warning); color:var(--warning); padding:4px 8px; border-radius:4px; font-size:0.6rem; cursor:pointer; font-weight:bold;">CLEAR MAPS</button>
+                    </div>
+                </div>
+                <div id="topo-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:12px; margin-top:12px; max-height: 200px; overflow-y:auto;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_PORT = '4040'; 
+        const socket = io('http://' + window.location.hostname + ':' + API_PORT, {
+            auth: { token: "YOUR_SECRET_API_KEY_HERE" }
+        });
+        
+        // DOM Elements
+        const statusBox = document.getElementById('connection-status-box');
+        const connectionStatus = document.getElementById('connection-status');
+        const matrixEl = document.getElementById('alert-matrix');
+        const streamEl = document.getElementById('cognitive-stream');
+        const matrixEmpty = document.getElementById('alert-matrix-empty');
+        const streamEmpty = document.getElementById('stream-empty');
+        const clearFilterBtn = document.getElementById('clear-filter-btn');
+        const matrixTitle = document.getElementById('matrix-title');
+        const emptySubtext = document.getElementById('empty-subtext');
+        
+        // State Management
+        const eventRegistry = {};
+        let globalThreats = [];
+        let globalAssets = {};
+        let appInventory = {};
+        let appGroups = {};
+        let appDeviceGroups = {};
+        let activePolicyGroup = "Default";
+        let activeDeviceFilter = null; 
+        
+        function updateEmptyStates() {
+            if (matrixEl.children.length === 0) {
+                matrixEmpty.style.display = 'flex';
+                if (activeDeviceFilter) {
+                    emptySubtext.innerHTML = `No active network threats detected.<br><span style="color:var(--success); font-weight:bold; font-size:0.9rem; display:inline-block; margin-top:8px;">[ ${activeDeviceFilter} IS SECURE ]</span>`;
+                } else {
+                    emptySubtext.textContent = `AWAITING SECURITY TELEMETRY...`;
+                }
+            } else {
+                matrixEmpty.style.display = 'none';
+            }
+            streamEmpty.style.display = streamEl.children.length === 0 ? 'flex' : 'none';
+        }
+
+        socket.on('connect', () => {
+            statusBox.classList.add('connected');
+            connectionStatus.textContent = 'LINK SECURE // MESH ONLINE';
+        });
+
+        socket.on('disconnect', () => {
+            statusBox.classList.remove('connected');
+            connectionStatus.textContent = 'LINK LOST // RECONNECTING';
+        });
+
+        // --------------------------------------------------------
+        // DATA INGESTION
+        // --------------------------------------------------------
+        socket.on('sync_state', (data) => {
+            globalThreats = [...data.alerts, ...data.threats]
+                .sort((a,b) => new Date(b.received_at || b.ingested_at) - new Date(a.received_at || a.ingested_at));
+            
+            if(data.assets) {
+                globalAssets = data.assets;
+                renderMeshPanel();
+            }
+            if(data.inventory) {
+                appInventory = data.inventory;
+                renderInventory();
+            }
+            if(data.groups) appGroups = data.groups;
+            if(data.deviceGroups) appDeviceGroups = data.deviceGroups;
+            renderMatrix();
+        });
+
+        socket.on('policy_sync', (data) => {
+            appGroups = data.groups;
+            appDeviceGroups = data.deviceGroups;
+            if (document.getElementById('policy-modal').classList.contains('active')) {
+                renderPolicyModal();
+            }
+        });
+
+        socket.on('new_inventory_update', (data) => {
+            appInventory[data.host] = data.inventory;
+            renderInventory();
+        });
+
+        socket.on('new_fim_alert', (data) => { 
+            globalThreats.unshift(data);
+            if (!activeDeviceFilter || activeDeviceFilter === data.source) {
+                addEventToUI(data, true); 
+                updateEmptyStates();
+            }
+        });
+        
+        socket.on('new_threat_intel', (data) => { 
+            globalThreats.unshift(data);
+            if (!activeDeviceFilter || activeDeviceFilter === data.source) {
+                addEventToUI(data, true); 
+                updateEmptyStates();
+            }
+        });
+        
+        socket.on('new_asset_discovered', (payload) => { 
+            globalAssets[payload.id] = payload.data;
+            renderMeshPanel();
+        });
+
+        // --------------------------------------------------------
+        // ACTIVE MESH (BOTTOM PANEL)
+        // --------------------------------------------------------
+        function filterMesh() {
+            const query = document.getElementById('mesh-search').value.toLowerCase();
+            const nodes = document.querySelectorAll('.mesh-node');
+            nodes.forEach(node => {
+                if (node.id.toLowerCase().includes(query)) {
+                    node.style.display = 'flex';
+                } else {
+                    node.style.display = 'none';
+                }
+            });
+        }
+
+        function renderMeshPanel() {
+            const grid = document.getElementById('mesh-grid');
+            grid.innerHTML = '';
+            
+            const sortedNodes = Object.keys(globalAssets).sort((a,b) => globalAssets[b].incident_count - globalAssets[a].incident_count);
+            
+            sortedNodes.forEach(id => {
+                const data = globalAssets[id];
+                const time = new Date(data.last_seen).toLocaleTimeString();
+                const div = document.createElement('div');
+                div.className = `mesh-node ${activeDeviceFilter === id ? 'active' : ''}`;
+                div.id = id;
+                div.onclick = () => isolateDevice(id);
+                
+                div.innerHTML = `
+                    <div style="font-weight:bold; color:var(--text); font-size:0.95rem; display:flex; align-items:center; gap:6px;">
+                        <span style="color:var(--accent);">●</span> ${id}
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--text-dim); display:flex; justify-content:space-between; margin-top:4px;">
+                        <span>Sync: ${time}</span>
+                        <span style="${data.incident_count > 0 ? 'color:var(--danger); font-weight:bold;' : 'color:var(--success);'}">
+                            Alerts: ${data.incident_count}
+                        </span>
+                    </div>
+                `;
+                grid.appendChild(div);
+            });
+            filterMesh(); // Keep search active if re-rendered
+        }
+
+        function isolateDevice(id) {
+            activeDeviceFilter = id;
+            matrixTitle.innerHTML = `Endpoint Intelligence <span style="color:var(--accent); font-family:'Fira Code'; margin-left:8px;">[ ${id} ]</span>`;
+            clearFilterBtn.style.display = 'flex';
+            renderMeshPanel();
+            renderMatrix();
+            renderInventory();
+        }
+
+        function clearDeviceFilter() {
+            activeDeviceFilter = null;
+            matrixTitle.textContent = `Security Matrix [Global]`;
+            clearFilterBtn.style.display = 'none';
+            renderMeshPanel();
+            renderMatrix();
+            renderInventory();
+        }
+
+        // --------------------------------------------------------
+        // APP INVENTORY & USAGE
+        // --------------------------------------------------------
+        function formatUptime(secs) {
+            if(secs < 60) return secs + 's';
+            const mins = Math.floor(secs / 60);
+            if(mins < 60) return mins + 'm';
+            const hrs = Math.floor(mins / 60);
+            return hrs + 'h ' + (mins % 60) + 'm';
+        }
+
+        function filterInventory() {
+            const q = document.getElementById('inv-search').value.toLowerCase();
+            const rows = document.querySelectorAll('.inv-row');
+            rows.forEach(r => r.style.display = r.innerText.toLowerCase().includes(q) ? 'flex' : 'none');
+        }
+
+        function renderInventory() {
+            const grid = document.getElementById('inv-grid');
+            if(!grid) return;
+            grid.innerHTML = '';
+            
+            let allApps = [];
+            Object.keys(appInventory).forEach(host => {
+                if(activeDeviceFilter && host !== activeDeviceFilter) return;
+                const arr = appInventory[host] || [];
+                arr.forEach(app => {
+                    allApps.push({ host, ...app });
+                });
+            });
+            
+            allApps.sort((a,b) => b.uptime - a.uptime);
+            
+            allApps.forEach(app => {
+                const div = document.createElement('div');
+                div.className = 'inv-row';
+                div.style.cssText = 'padding: 10px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; font-family: "Fira Code", monospace; font-size: 0.8rem; transition: all 0.2s ease;';
+                
+                const shortHash = app.hash.length > 32 ? app.hash.substring(0, 16) + '...' : app.hash;
+                const killBtn = app.hash !== 'UNKNOWN' && app.hash !== 'ACCESS_DENIED' ? `<button onclick="navigator.clipboard.writeText('${app.hash}'); alert('Copied SHA256 Hash');" style="background:rgba(255,255,255,0.05); color:#fff; border:1px solid rgba(255,255,255,0.1); padding:4px 8px; border-radius:6px; font-size:0.65rem; cursor:pointer;">Copy Hash</button>` : '';
+
+                div.innerHTML = `
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span style="color:var(--accent); font-weight:bold;">${app.name} <span style="color:var(--text-dim); font-weight:normal;">(${app.user})</span></span>
+                        <span style="color:var(--text-dim); font-size:0.7rem;">Host: ${app.host} | SHA256: ${shortHash}</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap: 12px;">
+                        ${killBtn}
+                        <div style="background:rgba(16,185,129,0.1); color:var(--success); border: 1px solid rgba(16,185,129,0.3); padding:4px 10px; border-radius:12px; font-weight:bold; min-width:60px; text-align:center;">
+                            ${formatUptime(app.uptime)}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(div);
+            });
+            filterInventory();
+        }
+
+        // --------------------------------------------------------
+        // ALERT MATRIX
+        // --------------------------------------------------------
+        function renderMatrix() {
+            matrixEl.innerHTML = '';
+            streamEl.innerHTML = ''; 
+            
+            globalThreats.forEach(event => {
+                if (activeDeviceFilter && event.source !== activeDeviceFilter) return;
+                addEventToUI(event, false);
+            });
+            updateEmptyStates();
+        }
+
+        function addEventToUI(event, prepend = false) {
+            eventRegistry[event.id || event.file_path] = event; 
+
+            const isFIM = event.event_type !== 'THREAT_INTEL' && event.event_type !== 'ORACLE_TELEMETRY';
+            const typeClass = isFIM ? 'tag-fim' : 'tag-intel';
+            const typeLabel = event.event_type || 'ALERT';
+            const time = new Date(event.received_at || event.ingested_at || Date.now()).toLocaleTimeString();
+            const safeId = event.id || event.file_path;
+            
+            let displayReason = event.ai_reason || event.ai_summary || event.ai_verdict;
+
+            // --- STREAM ---
+            const streamEntry = document.createElement('div');
+            streamEntry.className = `stream-entry ${event.severity || 'low'}`;
+            streamEntry.innerHTML = `
+                <div class="entry-meta">[${time}] // ${event.source || 'LOCAL'}</div>
+                <div class="entry-title">${event.title || event.file_path}</div>
+                <div class="entry-ai">>> AI: ${displayReason}</div>
+            `;
+
+            // --- MATRIX CARD ---
+            const matrixCard = document.createElement('div');
+            matrixCard.className = `alert-card ${event.severity || 'low'}`;
+            
+            let actionButtons = `<button class="btn-inspect" onclick="inspectAlert('${safeId}')">&#x1F50E; Deep Inspect</button>`;
+            
+            if (isFIM) {
+                actionButtons += `
+                    <button class="btn-quarantine" onclick="issueCommand('quarantine', '${event.file_path}', '${event.source}')">⚠️ Quarantine</button>
+                    <button class="btn-freeze" onclick="issueCommand('lock_dir', '${event.file_path}', '${event.source}')">❄️ Freeze Dir</button>
+                `;
+            } else if (event.event_type === 'ORACLE_TELEMETRY') {
+                actionButtons += `<button class="btn-quarantine" onclick="issueCommand('kill', '${event.file_path}', '${event.source}')">🧨 Kill Process</button>`;
+            }
+
+            matrixCard.innerHTML = `
+                <div class="alert-tag ${typeClass}">${typeLabel}</div>
+                <div style="font-size: 0.70rem; color: var(--text-dim); margin-bottom: 6px; font-family: 'Fira Code', monospace;">[${time}] // Orig: ${event.source || 'Local'}</div>
+                <div style="font-weight: 600; font-size: 1rem; margin-bottom: 12px; word-break: break-word; line-height: 1.3;">
+                    ${event.title || (event.file_path ? event.file_path.split('/').pop() : 'Unknown')}
+                </div>
+                <div style="font-size: 0.80rem; color: var(--text-dim); margin-bottom: 12px; background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 6px;">
+                    VERDICT: <span style="font-weight: 800; font-family:'Fira Code'; color: ${event.severity === 'high' ? 'var(--danger)' : event.severity === 'medium' ? 'var(--warning)' : 'var(--success)'}">${event.ai_verdict}</span>
+                </div>
+                <div class="alert-actions">
+                    ${actionButtons}
+                </div>
+            `;
+
+            if (prepend) {
+                streamEl.prepend(streamEntry);
+                matrixEl.prepend(matrixCard);
+            } else {
+                streamEl.appendChild(streamEntry);
+                matrixEl.appendChild(matrixCard);
+            }
+        }
+
+        // --------------------------------------------------------
+        // C2 ACTIONS
+        // --------------------------------------------------------
+        function issueCommand(action, target, host) {
+            if(!target || target === 'undefined') return alert('No valid target path/PID found.');
+            
+            const promptMap = {
+                'quarantine': `⚠️ EXTREME ACTION: Execute File Quarantine across payload on [${host || 'Local'}]?`,
+                'lock_dir': `❄️ IMMUTABLE LOCK: Freeze all directory permissions (View-Only) on [${host || 'Local'}]?`,
+                'kill': `🧨 TERMINATE: Kill anomalous process ID on [${host || 'Local'}]?`
+            };
+
+            if(confirm(promptMap[action] || `Execute ${action}?`)) {
+                socket.emit('c2_command', { action, target, host });
+            }
+        }
+
+        function inspectAlert(id) {
+            const event = eventRegistry[id];
+            if(!event) return alert("Alert details not found in local registry.");
+            
+            const inspectorBody = document.getElementById('inspector-body');
+            inspectorBody.innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px;">
+                    <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 14px; border: 1px solid var(--border);">
+                        <span style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: bold;">Verdict Assessment</span>
+                        <div style="font-weight: bold; font-family: 'Fira Code'; font-size: 1.3rem; color: var(--accent); margin-top: 8px;">${event.ai_verdict}</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 14px; border: 1px solid var(--border);">
+                        <span style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: bold;">Mesh Origin</span>
+                        <div style="font-weight: bold; font-size: 1.2rem; margin-top: 8px;">${event.source || 'LOCAL_NODE'}</div>
+                    </div>
+                </div>
+                <p><strong>Target Vector / Path:</strong> <br><span style="word-wrap:break-word; font-family: 'Fira Code', monospace; font-size:0.95rem; color: var(--text-dim); display:inline-block; margin-top:6px;">${event.file_path || 'N/A'}</span></p>
+                
+                <h3 style="color: var(--accent); font-size: 1rem; text-transform: uppercase; margin-top: 32px; border-bottom: 1px solid var(--border); padding-bottom: 12px; font-weight:800;">Cognitive Reasoning</h3>
+                <pre>${event.ai_reason || event.ai_summary || 'No detailed reason provided.'}</pre>
+                
+                <h3 style="color: var(--accent); font-size: 1rem; text-transform: uppercase; margin-top: 32px; border-bottom: 1px solid var(--border); padding-bottom: 12px; font-weight:800;">Raw Node Telemetry [JSON]</h3>
+                <pre>${JSON.stringify(event, null, 2)}</pre>
+            `;
+            document.getElementById('inspector-modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('inspector-modal').classList.remove('active');
+        }
+        
+        // --------------------------------------------------------
+        // OTA FLEET MANAGEMENT
+        // ----------------------------------------------------
+        // TOPOGRAPHY & SCUBA INFRASTRUCTURE LOGIC
+        // ----------------------------------------------------
+        function openInfraModal() {
+            document.getElementById('infra-modal').classList.add('active');
+            fetchTopology();
+        }
+        
+        async function saveInfrastructure() {
+            const ip = document.getElementById('infra-ip').value;
+            const user = document.getElementById('infra-user').value;
+            const pass = document.getElementById('infra-pass').value;
+            if(!ip || !user || !pass) return alert("Fill all fields.");
+            
+            try {
+                const res = await fetch(`http://${window.location.hostname}:${API_PORT}/api/v2/infrastructure`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'x-api-key': 'YOUR_SECRET_API_KEY_HERE'},
+                    body: JSON.stringify({ ip, username: user, password: pass, type: 'switch', protocol: 'ssh' })
+                });
+                if(res.ok) {
+                    alert('Credentials Vaulted Successfully');
+                    document.getElementById('infra-pass').value = '';
+                }
+            } catch(e) {
+                alert('Error saving infrastructure');
+            }
+        }
+        
+        async function fetchTopology() {
+            try {
+                const res = await fetch(`http://${window.location.hostname}:${API_PORT}/api/v2/topology`, {
+                    headers: {'x-api-key': 'YOUR_SECRET_API_KEY_HERE'}
+                });
+                const data = await res.json();
+                const container = document.getElementById('topo-grid');
+                container.innerHTML = '';
+                if(!data || data.length === 0) {
+                    container.innerHTML = '<div style="color:var(--text-dim); font-size:0.8rem;">No topography mapped yet. Awaiting SSH execution.</div>';
+                    return;
+                }
+                
+                const maps = {};
+                data.forEach(d => {
+                    if(!maps[d.Switch_IP]) maps[d.Switch_IP] = [];
+                    maps[d.Switch_IP].push(d);
+                });
+                
+                for(let sw in maps) {
+                    const rogueCount = maps[sw].filter(m => m.Port_Topology.includes('Splitter') || m.Port_Topology.includes('Rogue')).length;
+                    const bColor = rogueCount > 0 ? 'var(--danger)' : 'var(--success)';
+                    
+                    container.innerHTML += `
+                        <div class="mesh-node" style="border-left: 4px solid ${bColor}">
+                            <div style="font-weight:bold;">Switch: ${sw}</div>
+                            <div style="font-size:0.75rem; color:var(--text-dim);">Mapped Ports: ${maps[sw].length}</div>
+                            ${rogueCount > 0 ? `<div style="color:var(--danger); font-size:0.7rem; margin-top:4px;">⚠️ ${rogueCount} Port Density Anomalies!</div>` : ''}
+                        </div>
+                    `;
+                }
+            } catch(e) {}
+        }
+        
+        async function clearInfrastructure() {
+            if(!confirm("Erase all securely vaulted SSH Switch Credentials?")) return;
+            try {
+                await fetch(`http://${window.location.hostname}:${API_PORT}/api/v2/infrastructure`, { method: 'DELETE', headers: {'x-api-key': 'YOUR_SECRET_API_KEY_HERE'} });
+                alert("Credentials Purged.");
+            } catch(e) {}
+        }
+
+        async function clearTopology() {
+            if(!confirm("Erase network topology maps and baseline history?")) return;
+            try {
+                await fetch(`http://${window.location.hostname}:${API_PORT}/api/v2/topology`, { method: 'DELETE', headers: {'x-api-key': 'YOUR_SECRET_API_KEY_HERE'} });
+                fetchTopology();
+            } catch(e) {}
+        }
+
+        // ----------------------------------------------------
+        function openOtaModal() {
+            const select = document.getElementById('ota-group-select');
+            select.innerHTML = '<option value="ALL">ALL HOST GROUPS</option>';
+            Object.keys(appGroups).forEach(g => {
+                select.innerHTML += `<option value="${g}">${g}</option>`;
+            });
+            document.getElementById('ota-file-label').textContent = 'Select core.zip payload...';
+            document.getElementById('ota-file-label').style.color = 'var(--accent)';
+            document.getElementById('ota-file-input').value = '';
+            document.getElementById('ota-deploy-btn').textContent = 'TRANSMIT OTA PAYLOAD';
+            document.getElementById('ota-modal').classList.add('active');
+        }
+
+        function updateOtaLabel() {
+            const file = document.getElementById('ota-file-input').files[0];
+            if (file) {
+                document.getElementById('ota-file-label').textContent = `SELECTED: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+                document.getElementById('ota-file-label').style.color = '#fff';
+            }
+        }
+
+        async function deployOta() {
+            const file = document.getElementById('ota-file-input').files[0];
+            const group = document.getElementById('ota-group-select').value;
+            if (!file) return alert("Please select a valid payload zip.");
+            
+            const btn = document.getElementById('ota-deploy-btn');
+            btn.textContent = 'TRANSMITTING...';
+            
+            const buffer = await file.arrayBuffer();
+            
+            try {
+                const res = await fetch(`http://${window.location.hostname}:${API_PORT}/api/v2/ota/upload?group=${group}`, {
+                    method: 'POST',
+                    headers: { 'x-api-key': 'YOUR_SECRET_API_KEY_HERE', 'Content-Type': 'application/zip' },
+                    body: buffer
+                });
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                
+                alert(`OTA UPDATE SUCCESS: Payload securely queued for ${data.hostsUpdated} hosts in group '${group}'.`);
+                document.getElementById('ota-modal').classList.remove('active');
+            } catch (err) {
+                alert(`OTA FAILURE: ${err.message}`);
+                btn.textContent = 'TRANSMIT OTA PAYLOAD';
+            }
+        }
+        
+        // --------------------------------------------------------
+        // HOST GROUP & POLICY MANAGEMENT
+        // --------------------------------------------------------
+        function openPolicyModal() {
+            renderPolicyModal();
+            document.getElementById('policy-modal').classList.add('active');
+        }
+
+        function renderPolicyModal() {
+             const groupList = document.getElementById('group-list');
+             groupList.innerHTML = '';
+             Object.keys(appGroups).forEach(g => {
+                 const btn = document.createElement('button');
+                 btn.textContent = g;
+                 btn.style.cssText = `padding:8px 12px; text-align:left; border-radius:6px; cursor:pointer; font-family:'Fira Code'; font-size:0.85rem; border:1px solid ${g === activePolicyGroup ? 'var(--accent)' : 'transparent'}; background:${g === activePolicyGroup ? 'rgba(0,240,255,0.1)' : 'rgba(255,255,255,0.05)'}; color:#fff; transition:all 0.2s;`;
+                 btn.onclick = () => { activePolicyGroup = g; renderPolicyModal(); };
+                 groupList.appendChild(btn);
+             });
+             
+             document.getElementById('active-group-label').textContent = activePolicyGroup;
+             const pol = appGroups[activePolicyGroup] || {};
+             const togglesDiv = document.getElementById('policy-toggles');
+             togglesDiv.innerHTML = '';
+             
+             const options = [
+                 { id: "ENABLE_FIM", label: "File Integrity Monitor (FIM)" },
+                 { id: "ENABLE_BEHAVIORAL", label: "Behavioral/Fileless Tracking" },
+                 { id: "ENABLE_ORACLE", label: "Deep Oracle Network Telemetry" },
+                 { id: "ENABLE_DECOY", label: "Honeypot Decoy Sensors" },
+                 { id: "ENABLE_YARA", label: "YARA Pattern Matching" },
+                 { id: "ENABLE_COMPLIANCE", label: "Compliance Enforcement" },
+                 { id: "ENABLE_NDR", label: "Network Detection & Response" },
+                 { id: "ENABLE_ROLLBACK", label: "Automated Rollback" },
+                 { id: "WATCHTOWER_AUDIT_MODE", label: "Audit Mode (No Terminations)" }
+             ];
+             
+             options.forEach(opt => {
+                 const isChecked = pol[opt.id] === true || String(pol[opt.id]).toLowerCase() === "true";
+                 togglesDiv.innerHTML += `
+                    <label style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); padding:12px; border-radius:8px; border:1px solid var(--border); cursor:pointer; transition:all 0.2s;">
+                        <span style="font-family:'Fira Code'; font-size:0.85rem;">${opt.label}</span>
+                        <input type="checkbox" id="pol-${opt.id}" ${isChecked ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;">
+                    </label>
+                 `;
+             });
+             
+             const hostList = document.getElementById('host-enrollment-list');
+             hostList.innerHTML = '';
+             Object.keys(appDeviceGroups).forEach(host => {
+                 const hg = appDeviceGroups[host];
+                 let selectOpts = '';
+                 Object.keys(appGroups).forEach(g => {
+                     selectOpts += `<option value="${g}" ${g===hg ? 'selected' : ''}>${g}</option>`;
+                 });
+                 
+                 hostList.innerHTML += `
+                    <div style="background:rgba(255,255,255,0.02); padding:10px; border-radius:8px; border:1px solid var(--border);">
+                        <div style="font-family:'Fira Code'; font-size:0.8rem; margin-bottom:6px; color:var(--accent); font-weight:bold;">${host}</div>
+                        <select onchange="reassignHost('${host}', this.value)" style="width:100%; padding:6px; background:#000; color:#fff; border:1px solid var(--border); border-radius:6px; font-family:'Fira Code'; font-size:0.75rem; outline:none; cursor:pointer;">
+                            ${selectOpts}
+                        </select>
+                    </div>
+                 `;
+             });
+        }
+        
+        function reassignHost(host, newGroup) {
+            fetch('http://' + window.location.hostname + ':' + API_PORT + '/api/v2/policies/update', {
+                method: 'POST', headers:{'Content-Type': 'application/json', 'x-api-key': 'YOUR_SECRET_API_KEY_HERE'},
+                body: JSON.stringify({ host: host, newGroup: newGroup })
+            });
+        }
+        
+        function savePolicyConfig() {
+            const newPol = {};
+            const keys = ["ENABLE_FIM", "ENABLE_BEHAVIORAL", "ENABLE_ORACLE", "ENABLE_DECOY", "ENABLE_YARA", "ENABLE_COMPLIANCE", "ENABLE_NDR", "ENABLE_ROLLBACK", "WATCHTOWER_AUDIT_MODE"];
+            keys.forEach(k => {
+                newPol[k] = document.getElementById('pol-'+k).checked;
+            });
+            fetch('http://' + window.location.hostname + ':' + API_PORT + '/api/v2/policies/update', {
+                method: 'POST', headers:{'Content-Type': 'application/json', 'x-api-key': 'YOUR_SECRET_API_KEY_HERE'},
+                body: JSON.stringify({ group: activePolicyGroup, policy: newPol })
+            }).then(() => {
+                alert(`Policy deployed to Host Group: ${activePolicyGroup}`);
+            });
+        }
+        
+        function createGroup() {
+            const name = document.getElementById('new-group-name').value.trim();
+            if(!name || appGroups[name]) return;
+            activePolicyGroup = name;
+            appGroups[name] = {...appGroups["Default"]};
+            renderPolicyModal();
+            savePolicy();
+            document.getElementById('new-group-name').value = '';
+        }
+    </script>
+</body>
+</html>

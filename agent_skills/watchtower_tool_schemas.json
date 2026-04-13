@@ -1,0 +1,39 @@
+{
+  "name": "Watchtower Agentic Skills Protocol",
+  "version": "1.6.0",
+  "description": "This schema defines local Python scripts that AI Agents (LLMs) can invoke to autonomously execute commercial-grade NDR/EDR threat-hunting on the local host.",
+  "tools": [
+    {
+      "name": "watchtower_scan_network",
+      "description": "Executes a localized Network Detection & Response (NDR) scan natively mapping active TCP sockets. Analyzes process lineages and flags anomalous mass-socket allocations indicating C2 exfiltration bursts.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "watchtower_scan_file_entropy",
+      "description": "Evaluates the cryptographic Shannon Entropy of a specific given file path to preemptively classify mathematically obfuscated ransomware droppers before execution.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "The absolute or relative path to the file you want to cryptographically assess."
+          }
+        },
+        "required": ["file_path"]
+      }
+    },
+    {
+      "name": "watchtower_scan_registry",
+      "description": "Performs a localized CIS Compliance check evaluating OS-level file permissions, shadow copy integrity, and unauthorized FireVault configurations.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  ]
+}
