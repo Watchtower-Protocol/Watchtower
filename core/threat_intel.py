@@ -4,7 +4,7 @@ import urllib.error
 import json
 import os
 
-STATE_FILE = os.path.expanduser("~/.openclaw/workspace/data/security/threat_intel_state.json")
+STATE_FILE = os.path.expanduser("~/.watchtower/data/security/threat_intel_state.json")
 
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")

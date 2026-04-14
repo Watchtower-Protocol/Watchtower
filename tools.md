@@ -21,7 +21,7 @@ The EDR architecture listens for JSON-level API routing via active WebSocket tun
 - **`UPDATE_CORE`**: Downloads an OTA `zip` package to self-update the internal EDR framework. Payload must pass a strict cryptographic HMAC signature validation utilizing the `WATCHTOWER_API_KEY`.
 
 ## 3. Agentic Skills Protocol (`/agent_skills/`)
-Watchtower Command natively integrates with downstream Autonomous Orchestration AI architectures (like OpenClaw, Hermes, SWE-Agent, or AutoGPT) as well as modern IDE Copilots. Rather than relying on continuous Python sub-loops, an autonomous orchestration agent or local AI assistant can physically assume direct control of the EDR sensors using single-shot executable wrappers.
+Watchtower Command natively integrates with downstream Autonomous Orchestration AI architectures (like Hermes, SWE-Agent, or AutoGPT) as well as modern IDE Copilots. Rather than relying on continuous Python sub-loops, an autonomous orchestration agent or local AI assistant can physically assume direct control of the EDR sensors using single-shot executable wrappers.
 
 1. Read the `agent_skills/watchtower_tool_schemas.json` array to ingest the strict API schemas mapping to OpenAI/Anthropic universal Tool Calling protocols.
 2. Execute the CLI scripts directly:

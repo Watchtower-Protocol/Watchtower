@@ -1,7 +1,7 @@
 #!/bin/bash
 echo -e "\033[1;36m[Watchtower Secure Updater]\033[0m"
 # In production, this fetches a signed manifest file.
-# e.g. curl -sSL https://raw.githubusercontent.com/openclaw/watchtower/main/manifest.json.sig
+# e.g. curl -sSL https://raw.githubusercontent.com/Watchtower-Protocol/Watchtower/main/manifest.json.sig
 # gpg --verify manifest.json.sig
 
 echo "[*] Backing up local state (Database & Environment)..."
