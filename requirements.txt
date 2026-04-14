@@ -4,3 +4,4 @@ sentence-transformers==3.4.1
 lancedb==0.17.0
 pyarrow==19.0.0
 paramiko==3.4.0
+

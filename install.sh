@@ -37,3 +37,4 @@ fi
 
 mkdir -p data/quarantine
 echo "[Watchtower] Dependency Installation Complete."
+

@@ -12,3 +12,4 @@ If you build a new `watchtower_XXX.py` sensor and submit a PR:
 1. Fork the framework branch!
 2. Validate your Python code against MacOS, Linux, and Windows locally using the `watchtower_sim.py` environment.
 3. Submit a Pull Request documenting exactly what OS environment you ran tests against natively.
+

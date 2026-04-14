@@ -70,3 +70,4 @@ EOF2"
 else
     echo "Unsupported OS for auto-service generation."
 fi
+

@@ -19,3 +19,4 @@ PIDS="$PIDS $!"
 echo "[Watchtower Sentinel] Headless supervisor operational. Press Ctrl+C to shutdown."
 trap "kill $PIDS; exit" INT TERM
 wait
+
