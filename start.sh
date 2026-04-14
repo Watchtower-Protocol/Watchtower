@@ -27,6 +27,10 @@ echo "[Watchtower] Starting C2 Beacon Listener & Hub Services..."
 python3 watchtower_beacon.py &
 PIDS="$PIDS $!"
 
+echo "[Watchtower] Engaging Kernel-Level Resurrection Watchdog..."
+python3 watchtower_resurrection.py &
+PIDS="$PIDS $!"
+
 echo "[Watchtower] Booting Master Topography Scraper Engine natively..."
 python3 watchtower_net_scraper.py &
 PIDS="$PIDS $!"

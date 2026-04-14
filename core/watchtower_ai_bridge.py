@@ -28,6 +28,13 @@ def _analyze_file(event_type, filepath, entropy=None):
     except Exception as e:
         return {"verdict": "UNKNOWN", "reason": f"Could not read file: {e}"}
 
+    # System Sentinel: Prompt Injection Defense
+    jailbreak_heuristics = ["ignore previous", "system override", "forget all", "disregard", "new persona", "you are now"]
+    content_lower = content.lower()
+    for heuristic in jailbreak_heuristics:
+        if heuristic in content_lower:
+            return {"verdict": "MALICIOUS", "reason": f"Prompt Injection / Jailbreak Detected (Heuristic: '{heuristic}')"}
+
     system_prompt = (
         "You are Watchtower, an elite cybersecurity EDR AI. "
         "Analyze this file event and its content snippet. "

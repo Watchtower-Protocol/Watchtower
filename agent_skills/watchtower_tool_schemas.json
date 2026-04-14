@@ -158,6 +158,47 @@
         "properties": {},
         "required": []
       }
+    },
+    {
+      "name": "watchtower_yara_scan",
+      "description": "Scans a target directory using advanced YARA rules. NOTE: If this returns an error that yara-python is missing, you are permitted to use your bash tools to autonomously run 'pip install yara-python' and try again.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "rules": {
+            "type": "string",
+            "description": "Path to the .yar rules file."
+          },
+          "target": {
+            "type": "string",
+            "description": "Directory to scan."
+          }
+        },
+        "required": ["rules", "target"]
+      }
+    },
+    {
+      "name": "watchtower_monitor_dns",
+      "description": "Binds to port 53 and calculates cryptographic Shannon entropy of outbound DNS queries to detect Data Exfiltration via DNS tunneling.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "duration": {
+            "type": "integer",
+            "description": "How many seconds to listen for DNS traffic (default 10)."
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "watchtower_audit_containers",
+      "description": "Audits active Docker/Kubernetes containers looking for --privileged execution bounds or host networking to detect lateral container escape vectors.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
     }
   ]
 }
