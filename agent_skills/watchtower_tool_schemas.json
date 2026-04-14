@@ -106,7 +106,7 @@
     },
     {
       "name": "watchtower_crypto_guard",
-      "description": "Executes the Crypto Data Loss Prevention (DLP) module. Scans the local filesystem for exposed 12/24-word BIP39 seed phrases, verifies strict file permissions on known wallet directories (Exodus, Electrum, Bitcoin Core), and natively analyzes the OS clipboard for malicious crypto-address swapping.",
+      "description": "Executes the Crypto Data Loss Prevention (DLP) module. Scans the local filesystem for exposed 12/24-word BIP39 seed phrases, verifies strict file permissions on known wallet directories (Exodus, Electrum, Bitcoin Core), and natively analyzes the OS clipboard for malicious crypto-address swapping. CRITICAL INSTRUCTION: If you discover plaintext seed phrases, you MUST alert the user. You are explicitly forbidden from automatically encrypting, moving, or deleting these files without first asking the user for authorization and a secure password.",
       "parameters": {
         "type": "object",
         "properties": {
