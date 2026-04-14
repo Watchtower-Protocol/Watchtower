@@ -6,9 +6,9 @@ import os
 
 STATE_FILE = os.path.expanduser("~/.openclaw/workspace/data/security/threat_intel_state.json")
 
-TELEGRAM_BOT_TOKEN = "8556410041:AAET648uDyrBWk7UJdol-w1ZQcytX_ySAGI"
-CHAT_ID = "-1003752847454"
-TOPIC_ID = 202
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
+TOPIC_ID = os.environ.get("TELEGRAM_TOPIC_ID", "202")
 
 CISA_KEV_URL = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
 
