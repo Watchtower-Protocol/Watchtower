@@ -102,7 +102,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     print("====================================================")
-    print(" WATCHTOWER v1.6 - ISOLATED TESTING SUITE ")
+    print(" WATCHTOWER v1.6.9 - ISOLATED TESTING SUITE ")
     print(" NOTE: Keep the Command Center Dashboard open on ")
     print("       localhost:8080 to watch telemetry stream live.")
     print("====================================================\n")

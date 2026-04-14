@@ -1,4 +1,4 @@
-# Watchtower v1.6: Complete System Topology
+# Watchtower v1.6.9: Complete System Topology
 
 This document illustrates the precise pipeline workflows and internal dependencies of the Watchtower Sovereign Security platform through a top-down architecture schematic.
 

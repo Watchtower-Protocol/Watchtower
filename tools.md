@@ -1,4 +1,4 @@
-# Watchtower v1.6 Tools & EDR Capability Architecture
+# Watchtower v1.6.9 Tools & EDR Capability Architecture
 
 This document maps out the autonomous internal toolkits and communication pathways established within the Sovereign Host Agent. Any autonomous AI interacting with this system should refer to these guidelines.
 
@@ -30,7 +30,7 @@ Watchtower Command natively integrates with downstream Autonomous Orchestration 
    - **`scan_registry.py`**: CIS alignment compliance maps natively.
 
 ### 4. Advanced Purple Team Operations (`/agent_skills/`)
-As of v1.6.0, Watchtower Command supports autonomous offensive and DLP validation tool-sets designed natively as agentic functions. By mapping the full `watchtower_tool_schemas.json`, an LLM can:
+As of v1.6.9, Watchtower Command supports autonomous offensive and DLP validation tool-sets designed natively as agentic functions. By mapping the full `watchtower_tool_schemas.json`, an LLM can:
 - **Map & Enumerate**: `scan_subnet.py` and `enumerate_ad.py`
 - **Crypto Guard (DLP)**: `crypto_guard.py` blocks clipboard swapping and detects exposed 12/24 word BIP39 seed phrases natively.
 - **Deception**: `honeypot_spawner.py` lays dynamic traps across network ports.

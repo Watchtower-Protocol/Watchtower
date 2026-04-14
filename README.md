@@ -1,4 +1,4 @@
-# Watchtower Sovereign EDR/NDR (v1.6 Architecture)
+# Watchtower Sovereign EDR/NDR (v1.6.9 Architecture)
 
 ![Watchtower Cyberpunk Banner](assets/watchtower_banner.png)
 
