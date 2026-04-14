@@ -25,6 +25,14 @@ Watchtower Command natively integrates with downstream Autonomous Orchestration 
 
 1. Read the `agent_skills/watchtower_tool_schemas.json` array to ingest the strict API schemas mapping to OpenAI/Anthropic universal Tool Calling protocols.
 2. Execute the CLI scripts directly:
-   - `python3 agent_skills/scan_network.py` -> Returns strict JSON mapping raw TCP/C2 sweeps.
-   - `python3 agent_skills/scan_file_entropy.py <file>` -> Evaluates base64/encryption mathematically. 
+   - **`scan_network.py`**: Active Socket extraction for NDR alerting.
+   - **`scan_file_entropy.py --file <path>`**: Zero-dependency Shannon Entropy calculation.
+   - **`scan_registry.py`**: CIS alignment compliance maps natively.
+
+### 4. Advanced Purple Team Operations (`/agent_skills/`)
+As of v1.6.0, Watchtower Command supports autonomous offensive and DLP validation tool-sets designed natively as agentic functions. By mapping the full `watchtower_tool_schemas.json`, an LLM can:
+- **Map & Enumerate**: `scan_subnet.py` and `enumerate_ad.py`
+- **Crypto Guard (DLP)**: `crypto_guard.py` blocks clipboard swapping and detects exposed 12/24 word BIP39 seed phrases natively.
+- **Deception**: `honeypot_spawner.py` lays dynamic traps across network ports.
+- **Isolate**: `isolate_host.py` gives Agents the native ability to modify OS firewalls (`pfctl`, `iptables`, `netsh`) to logically airgap compromised hosts upon detecting ransomware—*Warning: Ensure explicit Trust Authorization before bypassing fail-safe dry runs.* 
    - `python3 agent_skills/scan_registry.py` -> Validates active CIS configurations.

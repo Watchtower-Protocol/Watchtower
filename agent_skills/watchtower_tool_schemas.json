@@ -34,6 +34,130 @@
         "properties": {},
         "required": []
       }
+    },
+    {
+      "name": "watchtower_scan_subnet",
+      "description": "Performs a localized zero-dependency network discovery sweep. Parses the host's ARP cache and runs targeted TCP probes on lateral movement ports (22, 445, 3389, 5985) to map the attack surface.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "watchtower_simulate_lateral",
+      "description": "Simulates an aggressive lateral movement attack (SSH brute-force, SMB Pass-the-Hash, WinRM spray) against a specified target IP to test NDR alerting capabilities.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "target_ip": {
+            "type": "string",
+            "description": "The IPv4 address of the node to attack."
+          }
+        },
+        "required": ["target_ip"]
+      }
+    },
+    {
+      "name": "watchtower_enumerate_ad",
+      "description": "Executes the local Watchtower Active Directory sensor script to map domain controllers, organizational units, and domain policies. Used for privilege escalation path discovery.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "watchtower_isolate_host",
+      "description": "CRITICAL: Modifies host firewall rules (iptables, netsh, or pfctl) to logically airgap the machine from the network while preserving Watchtower telemetry channels. You MUST converse with the user to gain explicit consent before passing force_consent=true, unless the user explicitly told you otherwise. If force_consent is false, the script performs a dry-run.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": ["isolate", "restore"],
+            "description": "Whether to 'isolate' the host or 'restore' normal connectivity."
+          },
+          "force_consent": {
+            "type": "boolean",
+            "description": "Pass true ONLY if you trust the isolation or the user gave you direct command authority."
+          }
+        },
+        "required": ["action", "force_consent"]
+      }
+    },
+    {
+      "name": "watchtower_analyze_pcap",
+      "description": "Performs a localized, time-bound packet capture (PCAP) on a specific port. Returns a summarized, LLM-readable array of network flows (source, destination, flags) to analyze active C2 or exfiltration traffic.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "port": {
+            "type": "integer",
+            "description": "The TCP/UDP port to monitor (e.g., 443, 4444)."
+          },
+          "duration": {
+            "type": "integer",
+            "description": "How many seconds to listen for traffic (default 10)."
+          }
+        },
+        "required": ["port"]
+      }
+    },
+    {
+      "name": "watchtower_crypto_guard",
+      "description": "Executes the Crypto Data Loss Prevention (DLP) module. Scans the local filesystem for exposed 12/24-word BIP39 seed phrases, verifies strict file permissions on known wallet directories (Exodus, Electrum, Bitcoin Core), and natively analyzes the OS clipboard for malicious crypto-address swapping.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": ["scan_wallets", "clipboard", "scan_seeds", "all"],
+            "description": "Which crypto-protection module to run."
+          },
+          "directory": {
+            "type": "string",
+            "description": "The directory to sweep for plaintext seed phrases (default: ~/Desktop)."
+          }
+        },
+        "required": ["action"]
+      }
+    },
+    {
+      "name": "watchtower_hunt_persistence",
+      "description": "Scans OS-specific startup locations (Windows Registry Run Keys, macOS LaunchAgents, Linux crontabs) to find malware attempting to survive reboots.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "watchtower_spawn_honeypot",
+      "description": "Dynamically binds a fake listening port (e.g. 3306 for fake MySQL, 2222 for fake SSH) to trap lateral movement bots. Returns the IP of any attacker that touches it.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "port": {
+            "type": "integer",
+            "description": "The port to fake."
+          },
+          "timeout": {
+            "type": "integer",
+            "description": "Wait time in seconds (default 10)."
+          }
+        },
+        "required": ["port"]
+      }
+    },
+    {
+      "name": "watchtower_correlate_logs",
+      "description": "Queries native OS event logs (Windows Event Viewer, macOS unified logs, Linux auth.log) to return the most recent failed login attempts without needing a heavy SIEM.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
     }
   ]
 }

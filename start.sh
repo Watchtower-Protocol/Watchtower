@@ -31,6 +31,14 @@ echo "[Watchtower] Booting Master Topography Scraper Engine natively..."
 python3 watchtower_net_scraper.py &
 PIDS="$PIDS $!"
 
+echo "[Watchtower] Starting Crypto Guard DLP Monitor..."
+python3 ../agent_skills/crypto_guard.py --monitor &
+PIDS="$PIDS $!"
+
+echo "[Watchtower] Deploying Local Network Honeypot on port 3306 (MySQL decoy)..."
+python3 ../agent_skills/honeypot_spawner.py --port 3306 --monitor &
+PIDS="$PIDS $!"
+
 echo "[Watchtower] All enabled systems operational. Press Ctrl+C to shutdown."
 trap "kill $API_PID $UI_PID $PIDS; exit" INT TERM
 wait
