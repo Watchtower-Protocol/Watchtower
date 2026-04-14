@@ -32,6 +32,7 @@ if ($NodeType -eq "1") {
         $EnvContent = $EnvContent -replace "http://127.0.0.1:4040", "http://$LocalIp:4040"
     }
     $EnvContent | Set-Content ".env"
+    Add-Content -Path ".env" -Value "`nNODE_TYPE=HUB"
     
     Write-Host "[+] Cryptographic Hub Keys Vaulted natively." -ForegroundColor Green
     Write-Host "Executing Dependency Installation Phase (Python venv)..." -ForegroundColor Yellow
@@ -65,6 +66,7 @@ elseif ($NodeType -eq "2") {
     $EnvContent = $EnvContent -replace "http://127.0.0.1:4040", $HubIp
     $EnvContent = $EnvContent -replace "generate_a_secure_random_key_here", $HubKey
     $EnvContent | Set-Content ".env"
+    Add-Content -Path ".env" -Value "`nNODE_TYPE=EDGE"
     
     Write-Host "Executing Python Sensor Engine dependencies..." -ForegroundColor Yellow
     if (-not (Test-Path ".venv")) {

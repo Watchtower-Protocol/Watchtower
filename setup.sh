@@ -25,10 +25,30 @@ if [ "$NODE_TYPE" == "1" ]; then
     fi
     rm -f .env.bak
     
+    echo "NODE_TYPE=HUB" >> .env
     echo -e "\033[1;32m[+] Cryptographic Hub Keys Vaulted natively.\033[0m"
     echo -e "\033[1;33mExecuting Dependency Installation Phase...\033[0m"
-    chmod +x install.sh
-    ./install.sh --hub
+    
+    python3 -m venv .venv
+    source .venv/bin/activate
+    if [ ! -f requirements.txt ]; then
+        cat << REQ > requirements.txt
+watchdog==6.0.0
+psutil==7.2.2
+sentence-transformers==3.4.1
+lancedb==0.17.0
+numpy==1.26.4
+pyarrow==19.0.0
+REQ
+    else
+        grep -q "psutil" requirements.txt || echo "psutil==7.2.2" >> requirements.txt
+    fi
+    pip install -r requirements.txt --no-deps
+    
+    echo "[Watchtower] Installing Node.js C2 Hub Components..."
+    cd backend && npm ci --ignore-scripts && cd ..
+    cd frontend && npm ci --ignore-scripts && cd ..
+    mkdir -p data/quarantine
     
     echo ""
     echo -e "\033[1;32m============================================\033[0m"
@@ -45,16 +65,31 @@ elif [ "$NODE_TYPE" == "2" ]; then
     sed -i.bak "s/generate_a_secure_random_key_here/$HUB_KEY/g" .env
     rm -f .env.bak
     
+    echo "NODE_TYPE=EDGE" >> .env
     echo -e "\033[1;33mExecuting Python Sensor Engine dependencies...\033[0m"
-    chmod +x install.sh
-    ./install.sh --edge
+    
+    python3 -m venv .venv
+    source .venv/bin/activate
+    if [ ! -f requirements.txt ]; then
+        cat << REQ > requirements.txt
+watchdog==6.0.0
+psutil==7.2.2
+sentence-transformers==3.4.1
+lancedb==0.17.0
+numpy==1.26.4
+pyarrow==19.0.0
+REQ
+    else
+        grep -q "psutil" requirements.txt || echo "psutil==7.2.2" >> requirements.txt
+    fi
+    pip install -r requirements.txt --no-deps
+    mkdir -p data/quarantine
     
     echo ""
     echo -e "\033[1;32m============================================\033[0m"
-    echo -e "Edge Setup Complete! Run \033[1;36m./start-agent.sh\033[0m"
+    echo -e "Edge Setup Complete! Run \033[1;36m./start.sh\033[0m"
     echo -e "\033[1;32m============================================\033[0m"
 else
     echo -e "\033[1;31mInvalid Selection. Exiting Setup.\033[0m"
     exit 1
 fi
-
