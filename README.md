@@ -52,6 +52,7 @@ chmod +x setup.sh
 Watchtower operates flawlessly on edge silicon or Cloud interfaces. It seamlessly decodes API signals from massive offline logic models (like Qwen, Llama, or Gemma) as well as commercial cloud APIs. For optimized EDR reasoning, guarantee your `max_tokens` context buffers evaluate up to `4000` tokens, allowing complex chain-of-thought isolation against file entropy variants.
 
 ## 5. Defense Mechanics
+*   **Crypto Guard (Web3 DLP):** Specifically engineered to protect crypto-assets. Watchtower natively runs a 24/7 background daemon that continuously scans your system clipboard to block malicious malware from swapping your Bitcoin, Ethereum, or Solana wallet addresses during transfers. It also autonomously sweeps your filesystem for accidentally exposed 12/24-word BIP39 plaintext seed phrases to prevent silent wallet drains.
 *   **Behavioral Engine:** Halts Living-off-the-Land memory drops.
 *   **Asset App Tracker:** Live-streams full SBOM usage pipelines metrics onto the matrix layout.
 *   **Decoys/USB-DLP:** Automatically counters physical extraction vectors and lateral ransom sweeps. 
