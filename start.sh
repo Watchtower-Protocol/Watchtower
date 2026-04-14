@@ -46,3 +46,4 @@ PIDS="$PIDS $!"
 echo "[Watchtower] All enabled systems operational. Press Ctrl+C to shutdown."
 trap "kill $API_PID $UI_PID $PIDS; exit" INT TERM
 wait
+

@@ -42,6 +42,16 @@ if ($NodeType -eq "1") {
     & ".\.venv\Scripts\Activate.ps1"
     pip install -r requirements.txt --no-deps
     
+    Write-Host "Installing Node.js C2 Hub Components..." -ForegroundColor Yellow
+    Set-Location backend
+    npm ci --ignore-scripts
+    Set-Location ..
+    Set-Location frontend
+    npm ci --ignore-scripts
+    Set-Location ..
+    
+    New-Item -ItemType Directory -Force -Path "data/quarantine" | Out-Null
+    
     Write-Host "`n============================================" -ForegroundColor Green
     Write-Host "Hub Setup Complete!"
     Write-Host "============================================" -ForegroundColor Green
@@ -62,6 +72,8 @@ elseif ($NodeType -eq "2") {
     }
     & ".\.venv\Scripts\Activate.ps1"
     pip install -r requirements.txt --no-deps
+    
+    New-Item -ItemType Directory -Force -Path "data/quarantine" | Out-Null
     
     Write-Host "`n============================================" -ForegroundColor Green
     Write-Host "Edge Setup Complete! Run .\start-agent.bat to start the Watchtower Node."
