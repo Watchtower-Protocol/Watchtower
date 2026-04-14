@@ -29,7 +29,14 @@ def _analyze_file(event_type, filepath, entropy=None):
         return {"verdict": "UNKNOWN", "reason": f"Could not read file: {e}"}
 
     # System Sentinel: Prompt Injection Defense
-    jailbreak_heuristics = ["ignore previous", "system override", "forget all", "disregard", "new persona", "you are now"]
+    try:
+        rules_path = os.path.join(os.path.dirname(__file__), "prompt_sentinel_rules.json")
+        with open(rules_path, "r") as f:
+            sentinel_data = json.load(f)
+            jailbreak_heuristics = sentinel_data.get("jailbreak_heuristics", [])
+    except:
+        jailbreak_heuristics = ["ignore previous", "system override", "forget all", "disregard", "new persona", "you are now"]
+        
     content_lower = content.lower()
     for heuristic in jailbreak_heuristics:
         if heuristic in content_lower:

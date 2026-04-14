@@ -199,6 +199,24 @@
         "properties": {},
         "required": []
       }
+    },
+    {
+      "name": "watchtower_update_sentinel",
+      "description": "Appends a new semantic jailbreak or prompt-injection heuristic to the Watchtower AI core firewall. CRITICAL: You must explicitly converse with the user and secure their permission before passing force_consent=true. If you pass false, a dry run is executed.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "heuristic": {
+            "type": "string",
+            "description": "The exact string or phrase hackers use to bypass the LLM (e.g., 'Developer Mode', 'Ignore previous')."
+          },
+          "force_consent": {
+            "type": "boolean",
+            "description": "Must be true if user gave you consent to append this."
+          }
+        },
+        "required": ["heuristic", "force_consent"]
+      }
     }
   ]
 }

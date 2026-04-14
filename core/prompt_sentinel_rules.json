@@ -1,0 +1,10 @@
+{
+  "jailbreak_heuristics": [
+    "ignore previous",
+    "system override",
+    "forget all",
+    "disregard",
+    "new persona",
+    "you are now"
+  ]
+}
