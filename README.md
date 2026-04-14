@@ -24,10 +24,10 @@ Watchtower is a **Sovereign Matrix**.
 2. **AI-Operated, Not Just AI-Assisted:** Legacy tools give alerts to a human SOC analyst. Watchtower gives tools natively to an LLM, allowing the AI to autonomously hunt, quarantine, and isolate threats in real-time.
 3. **Zero-Dependency:** Nodes do not require heavy agents, JVMs, or complex dependencies. Pure, lightweight subprocesses.
 
-## 1. What does it do?
+## ⚙️ What Does It Do?
 Watchtower acts as a fully enclosed, autonomous Central System spanning multi-OS networks. The centralized **Hub** hosts the AI-Driven telemetry portal and Fleet Asset Tracker, while distributed **Supervisors** (Beacons) autonomously enforce Security Policies, trace behavioral fileless memories, and intelligently hunt zero-days locally natively via Python subprocesses.
 
-## 2. Dynamic Host Group Administration
+## 🌐 Dynamic Host Group Administration
 Unlike legacy systems relying on `.env` modifications or static shell scripts, Watchtower implements **Centralized Group Policies**.
 
 1. **Dashboard Configuration**: From the `localhost:8080` Admin Dashboard, you can dynamically create deployment umbrellas (e.g., `Prod Tier 1`, `Laptops`, `Default`).
@@ -35,7 +35,7 @@ Unlike legacy systems relying on `.env` modifications or static shell scripts, W
 3. **Instant Phased-Rollout**: When configured, the Hub reaches out to enrolled endpoints and seamlessly toggles internal Python processes instantly without disrupting OS services.
 4. **OTA Network Upgrades**: Securely patch your mesh nodes instantly by navigating to the **🚀 Deploy OTA** module, uploading a `core.zip`, and watching endpoints natively parse your cryptographic HMAC deployment payload globally over internal tailscale IP blocks.
 
-## 3. Distributed Installation Wizard
+## ⚡ Distributed Installation Wizard
 
 Watchtower ships with an intelligent Terminal Onboarding interface. To natively configure an endpoint or your main console, execute:
 
@@ -48,10 +48,10 @@ chmod +x setup.sh
 1. **Master Hub Mode**: Automatically downloads `Node.js` GUI frameworks, sets up the web dashboard, and generates secure JSON Web Tokens natively into `.env`.
 2. **Edge Sensor Mode**: Deploys purely as a lightweight intelligence beacon, dropping all heavy web dependencies. It natively hooks outwards binding securely back to your configured Master Hub.
 
-## 4. Hardware Integrations (Qwen, Llama, OpenAI, Anthropic)
+## 🧠 Hardware Integrations (Qwen, Llama, OpenAI, Anthropic)
 Watchtower operates flawlessly on edge silicon or Cloud interfaces. It seamlessly decodes API signals from massive offline logic models (like Qwen, Llama, or Gemma) as well as commercial cloud APIs. For optimized EDR reasoning, guarantee your `max_tokens` context buffers evaluate up to `4000` tokens, allowing complex chain-of-thought isolation against file entropy variants.
 
-## 5. Defense Mechanics
+## 🛡️ Defense Mechanics
 *   **Crypto Guard (Web3 DLP):** Specifically engineered to protect crypto-assets. Watchtower natively runs a 24/7 background daemon that continuously scans your system clipboard to block malicious malware from swapping your Bitcoin, Ethereum, or Solana wallet addresses during transfers. It also autonomously sweeps your filesystem for accidentally exposed 12/24-word BIP39 plaintext seed phrases to prevent silent wallet drains.
 *   **Behavioral Engine:** Halts Living-off-the-Land memory drops.
 *   **Asset App Tracker:** Live-streams full SBOM usage pipelines metrics onto the matrix layout.
