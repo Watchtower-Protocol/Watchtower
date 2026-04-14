@@ -37,15 +37,12 @@ Unlike legacy systems relying on `.env` modifications or static shell scripts, W
 
 ## ⚡ Distributed Installation Wizard
 
-Watchtower ships with an intelligent Terminal Onboarding interface. To natively configure an endpoint or your main console, execute:
+Watchtower ships with intelligent Onboarding interfaces designed flawlessly for both strict Unix environments and Windows distributions. 
 
-```bash
-chmod +x setup.sh
-./setup.sh
-```
+**[👉 Click here to view the step-by-step Installation Guide (INSTALL.md)](INSTALL.md)**
 
-**The Setup Engine will prompt you to seamlessly deploy either:**
-1. **Master Hub Mode**: Automatically downloads `Node.js` GUI frameworks, sets up the web dashboard, and generates secure JSON Web Tokens natively into `.env`.
+The Setup Engine autonomously handles:
+1. **Master Hub Mode**: Automatically downloads GUI frameworks, sets up the web dashboard, and generates secure JSON Web Tokens natively into `.env`.
 2. **Edge Sensor Mode**: Deploys purely as a lightweight intelligence beacon, dropping all heavy web dependencies. It natively hooks outwards binding securely back to your configured Master Hub.
 
 ## 🧠 Hardware Integrations (Qwen, Llama, OpenAI, Anthropic)
